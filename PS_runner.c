@@ -35,6 +35,9 @@ void run_PS(int argc, char *argv[])
 	else if(strcmp(argv[1], grav2d_name) == 0)
 		PS_generate_grav2d(&A, &N, MPI_COMM_WORLD);
 	
+	else if(strcmp(argv[1], grav3d_name) == 0)
+		PS_generate_grav3d(&A, &N, MPI_COMM_WORLD);
+	
 	else
 	{
 		if(A.rank == 0) 
@@ -54,7 +57,7 @@ void run_PS(int argc, char *argv[])
 			x[i] = A.na + i+1;
 		
 		if(A.rank == 0)
-			printf("\nMultiplying a %dx%d system with %d processes.\n", N, N, A.size);
+			printf("\nMultiplying a %dx%d %s system with %d processes.\n", N, N, argv[1], A.size);
 		
 		PS_analyze(&A);
 		MPI_Barrier(MPI_COMM_WORLD);
@@ -67,7 +70,9 @@ void run_PS(int argc, char *argv[])
 		if(A.rank == 0)
 		{
 			ticks = clock() - ticks;
-			FILE* timefile = fopen("time_sine_mult.out", "a");
+			char filename[51];
+			snprintf(filename, 51, "time_%s_mult.out", argv[1]);
+			FILE* timefile = fopen(filename, "a");
 			fprintf(timefile, "%d %d %lg\n", N ,(int) ticks, ((double)ticks)/CLOCKS_PER_SEC);
 			fclose(timefile);
 		}
@@ -89,20 +94,22 @@ void run_PS(int argc, char *argv[])
 			x[i] = 1.0;
 		
 		if(A.rank == 0)
-			printf("Solving a %dx%d system with %d processes.\n\n", N, N, A.size);
+			printf("Solving a %dx%d %s system with %d processes.\n\n", N, N, argv[1], A.size);
 	
 		MPI_Barrier(MPI_COMM_WORLD);
 		if(A.rank == 0)
 			ticks = clock();
 		
-		PS_bcg(&A, y, x);
+		int iters = PS_bcg(&A, y, x);
 		
 		MPI_Barrier(MPI_COMM_WORLD);
 		if(A.rank == 0)
 		{
 			ticks = clock() - ticks;
-			FILE* timefile = fopen("time_sine_solve.out", "a");
-			fprintf(timefile, "%d %d %lg\n", N ,(int) ticks, ((double)ticks)/CLOCKS_PER_SEC);
+			char filename[51];
+			snprintf(filename, 51, "time_%s_solve.out", argv[1]);
+			FILE* timefile = fopen(filename, "a");
+			fprintf(timefile, "%d %d %d %lg\n", N, iters, (int) ticks, ((double)ticks)/CLOCKS_PER_SEC);
 			fclose(timefile);
 		}
 		
@@ -183,6 +190,8 @@ int main(int argc, char *argv[])
 	else if(strcmp(argv[1], grav1d_name) == 0)
 		run_PS(argc, argv);
 	else if(strcmp(argv[1], grav2d_name) == 0)
+		run_PS(argc, argv);
+	else if(strcmp(argv[1], grav3d_name) == 0)
 		run_PS(argc, argv);
 	else if(strcmp(argv[1], "dot") == 0)
 		run_dot(argc, argv);

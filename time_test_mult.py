@@ -8,21 +8,20 @@ maxsize = 15
 
 n_sine = np.logspace(minsize,maxsize,num=num,base=2).astype(int)
 n_grav1d = np.logspace(minsize,maxsize,num=num,base=2).astype(int)
-n_grav2d = np.logspace(minsize,maxsize,num=num,base=2)
-n_grav2d = np.sqrt(n_grav2d).astype(int)
+n_grav2d = np.logspace(minsize,maxsize,num=num,base=2).astype(int)
 
 Xsine = np.logspace(np.log2(n_sine[0]), np.log2(n_sine[-1]), num=200, base=2)
 Xgrav1d = np.logspace(np.log2(n_grav1d[0]), np.log2(n_grav1d[-1]), num=200, base=2)
-Xgrav2d = np.logspace(np.log2(n_grav2d[0]**2), np.log2(n_grav2d[-1]**2), num=200, base=2)
+Xgrav2d = np.logspace(np.log2(n_grav2d[0]), np.log2(n_grav2d[-1]), num=200, base=2)
 
 system("rm time_sine_mult.out")
 system("rm time_grav1d_mult.out")
 system("rm time_grav2d_mult.out")
 
 for i in range(num):
-	system("mpiexec -np 2 ./ParaSparse sine multiply "+str(n_sine[i]))
-	system("mpiexec -np 2 ./ParaSparse grav1d multiply "+str(n_grav1d[i]))
-	system("mpiexec -np 2 ./ParaSparse grav2d multiply "+str(n_grav2d[i]))
+	system("./ParaSparse sine multiply "+str(n_sine[i]))
+	system("./ParaSparse grav1d multiply "+str(n_grav1d[i]))
+	system("./ParaSparse grav2d multiply "+str(n_grav2d[i]))
 	
 print "Simulation done, calculating."
 	

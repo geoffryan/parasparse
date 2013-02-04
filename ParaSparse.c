@@ -11,6 +11,7 @@ const ParaSparse PS_DEFAULT = {.na=0, .nd=0, .N=0, .Ne=0, .length=0, .i=NULL, .j
 
 char grav1d_name[] = "grav1d";
 char grav2d_name[] = "grav2d";
+char grav3d_name[] = "grav3d";
 char sine_name[] = "sine";
 
 void PS_generate_sine(ParaSparse *M, int *N, MPI_Comm comm)
@@ -31,7 +32,7 @@ void PS_generate_sine(ParaSparse *M, int *N, MPI_Comm comm)
 		M->nd = ((M->rank)+1)*(*N/(M->size)) - M->na;
 	
 	for(n = 0; n < M->nd; n++)
-		PS_add_entry(M, n+M->na, n+M->na, 3.0+sin(n+M->na));
+		PS_add_entry(M, n+M->na, n+M->na, 10.0+sin(n+M->na));
 	
 	for(i = 0; i < *N; i++)
 		for(j = 0; j < *N; j++)
@@ -70,7 +71,7 @@ void PS_generate_grav1d(ParaSparse *M, int *N, MPI_Comm comm)
 
 void PS_generate_grav2d(ParaSparse *M, int *N, MPI_Comm comm)
 {
-	int i,j,n, Nx;
+	int i,j, Nx;
 	int x1, y1, x2, y2;
 	
 	*M = PS_DEFAULT;
@@ -87,9 +88,6 @@ void PS_generate_grav2d(ParaSparse *M, int *N, MPI_Comm comm)
 		M->nd = *N - M->na;
 	else
 		M->nd = ((M->rank)+1)*(*N/(M->size)) - M->na;
-	
-//	for(n = 0; n < M->nd; n++)
-//		PS_add_entry(M, n+M->na, n+M->na, -4.0);
 	
 	for(i = 0; i < *N; i++)
 		for(j = 0; j < *N; j++)
@@ -109,6 +107,48 @@ void PS_generate_grav2d(ParaSparse *M, int *N, MPI_Comm comm)
 			}
 		}
 	
+}
+
+void PS_generate_grav3d(ParaSparse *M, int *N, MPI_Comm comm)
+{
+	int i,j, Nx;
+	int x1, y1, z1, x2, y2, z2;
+	
+	*M = PS_DEFAULT;
+	
+	Nx = (int) pow( *N, 1.0/3.0);
+	*N = Nx * Nx * Nx;
+	M->N = *N;
+	M->comm = comm;
+	MPI_Comm_size(M->comm, &(M->size));
+	MPI_Comm_rank(M->comm, &(M->rank));
+	
+	M->na = (M->rank) * (*N/(M->size));
+	if(M->rank == M->size-1)
+		M->nd = *N - M->na;
+	else
+		M->nd = ((M->rank)+1)*(*N/(M->size)) - M->na;
+	
+	for(i = 0; i < *N; i++)
+		for(j = 0; j < *N; j++)
+		{
+			x1 = i % Nx;
+			y1 = (i / Nx) % Nx;
+			z1 = i / (Nx*Nx);
+			x2 = j % Nx;
+			y2 = (j / Nx) % Nx;
+			z2 = j / (Nx*Nx);
+			
+			if(j <= i && ((i>=M->na && i<M->na+M->nd) || (j>=M->na && j<M->na+M->nd)))
+			{
+				if(i == j)
+					PS_add_entry(M, i, j, -6.0);
+				else if(((x1 == x2) && (y1 == y2) && (z1 == z2+1 || z1 == z2-1))
+						|| ((x1 == x2) && (z1 == z2) && (y1 == y2+1 || y1 == y2-1))
+						|| ((y1 == y2) && (z1 == z2) && (x1 == x2+1 || x1 == x2-1)))
+					PS_add_entry(M, i, j, 1.0);
+			}
+		}
 }
 
 void PS_add_entry(ParaSparse *M, int i, int j, double Mij)
@@ -554,7 +594,7 @@ void PS_bcg_iter(ParaSparse *A, ParaSparse *C, double *r, double *p, double *x)
 	free(CAp);
 }
 
-void PS_bcg(ParaSparse *A, double *b, double *x)
+int PS_bcg(ParaSparse *A, double *b, double *x)
 {
 	int i;
 	
@@ -608,5 +648,7 @@ void PS_bcg(ParaSparse *A, double *b, double *x)
 	free(Cb);
 	free(r);
 	free(p);
+	
+	return i;
 	
 }

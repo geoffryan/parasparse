@@ -43,11 +43,13 @@ extern const ParaSparse PS_DEFAULT;
 
 extern char grav1d_name[];
 extern char grav2d_name[];
+extern char grav3d_name[];
 extern char sine_name[];
 
 void PS_generate_sine(ParaSparse *M, int *N, MPI_Comm comm);
 void PS_generate_grav1d(ParaSparse *M, int *N, MPI_Comm comm);
 void PS_generate_grav2d(ParaSparse *M, int *N, MPI_Comm comm);
+void PS_generate_grav3d(ParaSparse *M, int *N, MPI_Comm comm);
 void PS_add_entry(ParaSparse *M, int i, int j, double Mij);
 void PS_finalize(ParaSparse *M);
 void PS_analyze(ParaSparse *M);
@@ -59,6 +61,6 @@ double PS_dot(double *x, double *y, int nd, MPI_Comm comm);
 void PS_get_diag(ParaSparse *A, double *d);
 void PS_get_precond(ParaSparse *A, ParaSparse *C);
 void PS_bcg_iter(ParaSparse *A, ParaSparse *C, double *r, double *p, double *x);
-void PS_bcg(ParaSparse *A, double *b, double *x);
+int PS_bcg(ParaSparse *A, double *b, double *x);
 
 #endif 
