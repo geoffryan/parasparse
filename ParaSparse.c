@@ -13,69 +13,12 @@ char grav1d_name[] = "grav1d";
 char grav2d_name[] = "grav2d";
 char sine_name[] = "sine";
 
-void PS_generate_sine(ParaSparse *M, int N, MPI_Comm comm)
+void PS_generate_sine(ParaSparse *M, int *N, MPI_Comm comm)
 {
 	int i,j,n;
 	
 	*M = PS_DEFAULT;
 	
-	M->N = N;
-	M->comm = comm;
-	MPI_Comm_size(M->comm, &(M->size));
-	MPI_Comm_rank(M->comm, &(M->rank));
-	
-	M->na = (M->rank) * (N/(M->size));
-	if(M->rank == M->size-1)
-		M->nd = N - M->na;
-	else
-		M->nd = ((M->rank)+1)*(N/(M->size)) - M->na;
-	
-	for(n = 0; n < M->nd; n++)
-		PS_add_entry(M, n+M->na, n+M->na, 10.0+sin(n+M->na));
-	
-	for(i = 0; i < N; i++)
-		for(j = 0; j < N; j++)
-			if(j < i && i%(j+1) == 0 
-			   && ((i>=M->na && i<M->na+M->nd) || (j>=M->na && j<M->na+M->nd)))
-				PS_add_entry(M, i, j, 0.01*sin(i+N*j));
-}
-
-void PS_generate_grav1d(ParaSparse *M, int N, MPI_Comm comm)
-{
-	int i,j,n;
-	
-	*M = PS_DEFAULT;
-	
-	M->N = N;
-	M->comm = comm;
-	MPI_Comm_size(M->comm, &(M->size));
-	MPI_Comm_rank(M->comm, &(M->rank));
-	
-	M->na = (M->rank) * (N/(M->size));
-	if(M->rank == M->size-1)
-		M->nd = N - M->na;
-	else
-		M->nd = ((M->rank)+1)*(N/(M->size)) - M->na;
-	
-	for(n = 0; n < M->nd; n++)
-		PS_add_entry(M, n+M->na, n+M->na, -2.0);
-	
-	for(i = 0; i < N; i++)
-		for(j = 0; j < N; j++)
-			if(j == i-1 
-			   && ((i>=M->na && i<M->na+M->nd) || (j>=M->na && j<M->na+M->nd)))
-				PS_add_entry(M, i, j, 1.0);
-	
-}
-
-void PS_generate_grav2d(ParaSparse *M, int Nx, int *N, MPI_Comm comm)
-{
-	int i,j,n;
-	int x1, y1, x2, y2;
-	
-	*M = PS_DEFAULT;
-	
-	*N = Nx * Nx;
 	M->N = *N;
 	M->comm = comm;
 	MPI_Comm_size(M->comm, &(M->size));
@@ -88,7 +31,65 @@ void PS_generate_grav2d(ParaSparse *M, int Nx, int *N, MPI_Comm comm)
 		M->nd = ((M->rank)+1)*(*N/(M->size)) - M->na;
 	
 	for(n = 0; n < M->nd; n++)
-		PS_add_entry(M, n+M->na, n+M->na, -4.0);
+		PS_add_entry(M, n+M->na, n+M->na, 3.0+sin(n+M->na));
+	
+	for(i = 0; i < *N; i++)
+		for(j = 0; j < *N; j++)
+			if(j < i && i%(j+1) == 0 
+			   && ((i>=M->na && i<M->na+M->nd) || (j>=M->na && j<M->na+M->nd)))
+				PS_add_entry(M, i, j, 0.1*sin(i + (*N)*j));
+}
+
+void PS_generate_grav1d(ParaSparse *M, int *N, MPI_Comm comm)
+{
+	int i,j,n;
+	
+	*M = PS_DEFAULT;
+	
+	M->N = *N;
+	M->comm = comm;
+	MPI_Comm_size(M->comm, &(M->size));
+	MPI_Comm_rank(M->comm, &(M->rank));
+	
+	M->na = (M->rank) * (*N/(M->size));
+	if(M->rank == M->size-1)
+		M->nd = *N - M->na;
+	else
+		M->nd = ((M->rank)+1)*(*N/(M->size)) - M->na;
+	
+	for(n = 0; n < M->nd; n++)
+		PS_add_entry(M, n+M->na, n+M->na, -2.0);
+	
+	for(i = 0; i < *N; i++)
+		for(j = 0; j < *N; j++)
+			if(j == i-1 
+			   && ((i>=M->na && i<M->na+M->nd) || (j>=M->na && j<M->na+M->nd)))
+				PS_add_entry(M, i, j, 1.0);
+	
+}
+
+void PS_generate_grav2d(ParaSparse *M, int *N, MPI_Comm comm)
+{
+	int i,j,n, Nx;
+	int x1, y1, x2, y2;
+	
+	*M = PS_DEFAULT;
+	
+	Nx = (int) sqrt( *N);
+	*N = Nx * Nx;
+	M->N = *N;
+	M->comm = comm;
+	MPI_Comm_size(M->comm, &(M->size));
+	MPI_Comm_rank(M->comm, &(M->rank));
+	
+	M->na = (M->rank) * (*N/(M->size));
+	if(M->rank == M->size-1)
+		M->nd = *N - M->na;
+	else
+		M->nd = ((M->rank)+1)*(*N/(M->size)) - M->na;
+	
+//	for(n = 0; n < M->nd; n++)
+//		PS_add_entry(M, n+M->na, n+M->na, -4.0);
 	
 	for(i = 0; i < *N; i++)
 		for(j = 0; j < *N; j++)
@@ -102,7 +103,8 @@ void PS_generate_grav2d(ParaSparse *M, int Nx, int *N, MPI_Comm comm)
 			{
 				if(i == j)
 					PS_add_entry(M, i, j, -4.0);
-				else if(x1 == x2+1 || x1 == x2-1 || y1 == y2+1 || y1 == y2-1)
+				else if(((x1 == x2) && (y1 == y2+1 || y1 == y2-1))
+						|| ((y1 == y2) && (x1 == x2+1 || x1 == x2-1)))
 					PS_add_entry(M, i, j, 1.0);
 			}
 		}
@@ -438,13 +440,14 @@ double PS_dot(double *x, double *y, int nd, MPI_Comm comm)
 {
 	int i;
 	double xy = 0.0;
+	double xy_out;
 	
 	for(i=0; i<nd; i++)
 		xy += x[i]*y[i];
 	
-	MPI_Allreduce(MPI_IN_PLACE, &xy, 1, MPI_DOUBLE, MPI_SUM, comm);
+	MPI_Allreduce(&xy, &xy_out, 1, MPI_DOUBLE, MPI_SUM, comm);
 	
-	return xy;
+	return xy_out;
 }
 
 void PS_get_diag(ParaSparse *A, double *d)
@@ -537,7 +540,7 @@ void PS_bcg_iter(ParaSparse *A, ParaSparse *C, double *r, double *p, double *x)
 	for(i=0; i<nd; i++)
 		r[i] = rold[i] - alpha * CAp[i];
 	
-	beta = PS_dot(r, r, nd, A->comm);
+	beta = PS_dot(r, r, nd, A->comm) / r2;
 	
 	for(i=0; i<nd; i++)
 	{

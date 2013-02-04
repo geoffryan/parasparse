@@ -45,9 +45,9 @@ extern char grav1d_name[];
 extern char grav2d_name[];
 extern char sine_name[];
 
-void PS_generate_sine(ParaSparse *M, int N, MPI_Comm comm);
-void PS_generate_grav1d(ParaSparse *M, int N, MPI_Comm comm);
-void PS_generate_grav2d(ParaSparse *M, int Nx, int *N, MPI_Comm comm);
+void PS_generate_sine(ParaSparse *M, int *N, MPI_Comm comm);
+void PS_generate_grav1d(ParaSparse *M, int *N, MPI_Comm comm);
+void PS_generate_grav2d(ParaSparse *M, int *N, MPI_Comm comm);
 void PS_add_entry(ParaSparse *M, int i, int j, double Mij);
 void PS_finalize(ParaSparse *M);
 void PS_analyze(ParaSparse *M);
