@@ -452,6 +452,7 @@ void PS_free(ParaSparse *M)
 	free(M->recv_counts);
 	free(M->send_displs);
 	free(M->recv_displs);
+	free(M->send_order);
 	free(M->i_send);
 	free(M->i_recv);
 	free(M->y_send);
