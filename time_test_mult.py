@@ -25,9 +25,9 @@ for i in range(num):
 	
 print "Simulation done, calculating."
 	
-N_sine, ticks_sine, time_sine = np.loadtxt("time_sine_mult.out", unpack=True)
-N_grav1d, ticks_grav1d, time_grav1d = np.loadtxt("time_grav1d_mult.out", unpack=True)
-N_grav2d, ticks_grav2d, time_grav2d = np.loadtxt("time_grav2d_mult.out", unpack=True)
+N_sine, size_sine, dot_sine, ticks_sine, time_sine = np.loadtxt("time_sine_mult.out", unpack=True)
+N_grav1d, size_grav2d, dot_grav2d, ticks_grav1d, time_grav1d = np.loadtxt("time_grav1d_mult.out", unpack=True)
+N_grav2d, size_grav3d, dot_grav3d, ticks_grav2d, time_grav2d = np.loadtxt("time_grav2d_mult.out", unpack=True)
 
 fit_sine_time = np.polyfit(np.log(N_sine[5:]), np.log(time_sine[5:]), 1)
 fit_sine_ticks = np.polyfit(np.log(N_sine[5:]), np.log(ticks_sine[5:]), 1)
