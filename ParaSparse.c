@@ -7,7 +7,7 @@ const ParaSparse PS_DEFAULT = {.na=0, .nd=0, .N=0, .Ne=0, .length=0, .i=NULL, .j
 							.rank=0, .size=0, .comm=NULL, .send_counts=NULL, .recv_counts=NULL,
 							.send_displs=NULL, .recv_displs=NULL, .N_send=0, .N_recv=0,
 							.i_send=NULL, .i_recv=NULL, .y_send=NULL, .y_recv=NULL,
-							.analyzed=0, .finalized=0};	
+							.send_order=NULL, .analyzed=0, .finalized=0};	
 
 char grav1d_name[] = "grav1d";
 char grav2d_name[] = "grav2d";
@@ -226,6 +226,7 @@ void PS_analyze(ParaSparse *M)
 	M->recv_counts = (int *) malloc(M->size * sizeof(int));
 	M->send_displs = (int *) malloc(M->size * sizeof(int));
 	M->recv_displs = (int *) malloc(M->size * sizeof(int));
+	M->send_order = (int *) malloc(N * sizeof(int));
 	
 	MPI_Allgather(&(M->na), 1, MPI_INT, nas, 1, MPI_INT, M->comm);
 	MPI_Allgather(&(M->nd), 1, MPI_INT, nds, 1, MPI_INT, M->comm);
@@ -237,6 +238,8 @@ void PS_analyze(ParaSparse *M)
 		M->send_displs[n] = 0;
 		M->recv_displs[n] = 0;
 	}
+	for(n=0; n < N; n++)
+		M->send_order[n] = -1;
 	
 	full_count = (int *) malloc(N * sizeof(int));
 	for(n=0; n<N; n++)
@@ -307,6 +310,7 @@ void PS_analyze(ParaSparse *M)
 				if(M->i_send[M->send_displs[r]+ind] == -1)
 				{
 					M->i_send[M->send_displs[r]+ind] = i;
+					M->send_order[i] = M->send_displs[r]+ind;
 					break;
 				}
 				if(M->i_send[M->send_displs[r]+ind] == i)
@@ -384,12 +388,14 @@ void PS_multiply(ParaSparse *M, double *x, double *y)
 			}
 			
 			//TODO: Make this not suck --> Lookup table?
-			for(r = 0; r < M->N_send; r++)
-				if(M->i_send[r] == i)
-				{
-					M->y_send[r] += M->Mij[n] * x[j-na];
-					break;
-				}
+//			for(r = 0; r < M->N_send; r++)
+//				if(M->i_send[r] == i)
+//				{
+//					M->y_send[r] += M->Mij[n] * x[j-na];
+//					break;
+//				}
+			
+			M->y_send[M->send_order[i]] += M->Mij[n] * x[j-na];
 		}
 	}
 	

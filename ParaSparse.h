@@ -30,6 +30,7 @@ struct ParaSparse
 	int *i_recv;	//indices of contributions to y in multiply()
 	double *y_send;	//contributions to y in multiply()
 	double *y_recv; //contributions to y in multiply()
+	int *send_order;
 	
 	int analyzed;	//flag, whether send_counts is initialized and filled
 	int finalized;	//flag, whether i,j,Mij are allocated to the minimuim necessary amount
@@ -37,9 +38,9 @@ struct ParaSparse
 
 typedef struct ParaSparse ParaSparse;
 
-extern const ParaSparse PS_DEFAULT;	
-
 #define TOL 1e-10
+
+extern const ParaSparse PS_DEFAULT;	
 
 extern char grav1d_name[];
 extern char grav2d_name[];

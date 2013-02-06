@@ -67,12 +67,13 @@ void run_PS(int argc, char *argv[])
 		PS_multiply(&A, x, y);
 		
 		MPI_Barrier(MPI_COMM_WORLD);
+		if(A.rank == 0)
+			ticks = clock() - ticks;
 		
 		double dot = PS_dot(y,y,A.nd,A.comm);
 		
 		if(A.rank == 0)
 		{
-			ticks = clock() - ticks;
 			char filename[51];
 			snprintf(filename, 51, "time_%s_mult.out", argv[1]);
 			FILE* timefile = fopen(filename, "a");
@@ -105,16 +106,18 @@ void run_PS(int argc, char *argv[])
 		
 		MPI_Barrier(MPI_COMM_WORLD);
 		if(A.rank == 0)
-		{
 			ticks = clock() - ticks;
+		
+		double dot = PS_dot(x,x,A.nd,A.comm);
+		
+		if(A.rank == 0)
+		{
 			char filename[51];
 			snprintf(filename, 51, "time_%s_solve.out", argv[1]);
 			FILE* timefile = fopen(filename, "a");
-			fprintf(timefile, "%d %d %d %d %lg\n", N, A.size, iters, (int) ticks, ((double)ticks)/CLOCKS_PER_SEC);
+			fprintf(timefile, "%d %d %d %lg %d %lg\n", N, A.size, iters, dot, (int) ticks, ((double)ticks)/CLOCKS_PER_SEC);
 			fclose(timefile);
 		}
-		
-		double dot = PS_dot(x,x,A.nd,A.comm);
 		
 		if(A.rank == 0) 
 			printf("<x,x> = %lg\n", dot);
