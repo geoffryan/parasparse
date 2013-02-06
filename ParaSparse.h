@@ -17,22 +17,22 @@ struct ParaSparse
 	
 	int rank;	//Process Rank
 	int size;	//Number of Processes
-	MPI_Comm comm;
+	MPI_Comm comm;	//MPI Communicator
 	
-	int *send_counts;
-	int *recv_counts;
-	int *send_displs;
-	int *recv_displs;
+	int *send_counts;	//Array, size 'size', # of doubles sent to each rank during multiply
+	int *recv_counts;	//Array, size 'size', # of doubles received from each rank during multiply
+	int *send_displs;	//Array, size 'size', position where rank[i]'s data starts in i_send
+	int *recv_displs;	//Array, size 'size', position where rank[i]'s data starts in i_recv
 	
-	int N_send;
-	int N_recv;
-	int *i_send;
-	int *i_recv;
-	double *y_send;
-	double *y_recv;
+	int N_send;		//Number of doubles sent during multiply()
+	int N_recv;		//Number of doubles received during multiply()
+	int *i_send;	//indices of contributions to y in multiply()
+	int *i_recv;	//indices of contributions to y in multiply()
+	double *y_send;	//contributions to y in multiply()
+	double *y_recv; //contributions to y in multiply()
 	
-	int analyzed;
-	int finalized;
+	int analyzed;	//flag, whether send_counts is initialized and filled
+	int finalized;	//flag, whether i,j,Mij are allocated to the minimuim necessary amount
 };
 
 typedef struct ParaSparse ParaSparse;

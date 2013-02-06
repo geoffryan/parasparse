@@ -14,7 +14,7 @@ void run_PS(int argc, char *argv[])
 	}
 	
 	int i;
-	int N = strtod(argv[3], NULL);
+	int N = atoi(argv[3]);
 	double *x, *y;
 	clock_t ticks;
 	
@@ -147,7 +147,7 @@ void run_dot(int argc, char *argv[])
 		return;
 	}
 	
-	N = strtod(argv[2], NULL);
+	N = atoi(argv[2]);
 	
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
