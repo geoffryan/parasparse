@@ -90,15 +90,16 @@ void PS_generate_grav2d(ParaSparse *M, int *N, MPI_Comm comm)
 		M->nd = ((M->rank)+1)*(*N/(M->size)) - M->na;
 	
 	for(i = 0; i < *N; i++)
+	{		
 		for(j = 0; j < *N; j++)
 		{
-			x1 = i % Nx;
-			y1 = i / Nx;
-			x2 = j % Nx;
-			y2 = j / Nx;
-			
 			if(j <= i && ((i>=M->na && i<M->na+M->nd) || (j>=M->na && j<M->na+M->nd)))
 			{
+				x1 = i % Nx;
+				y1 = i / Nx;
+				x2 = j % Nx;
+				y2 = j / Nx;
+				
 				if(i == j)
 					PS_add_entry(M, i, j, -4.0);
 				else if(((x1 == x2) && (y1 == y2+1 || y1 == y2-1))
@@ -106,6 +107,7 @@ void PS_generate_grav2d(ParaSparse *M, int *N, MPI_Comm comm)
 					PS_add_entry(M, i, j, 1.0);
 			}
 		}
+	}
 	
 }
 
@@ -130,17 +132,18 @@ void PS_generate_grav3d(ParaSparse *M, int *N, MPI_Comm comm)
 		M->nd = ((M->rank)+1)*(*N/(M->size)) - M->na;
 	
 	for(i = 0; i < *N; i++)
+	{
 		for(j = 0; j < *N; j++)
 		{
-			x1 = i % Nx;
-			y1 = (i / Nx) % Nx;
-			z1 = i / (Nx*Nx);
-			x2 = j % Nx;
-			y2 = (j / Nx) % Nx;
-			z2 = j / (Nx*Nx);
-			
 			if(j <= i && ((i>=M->na && i<M->na+M->nd) || (j>=M->na && j<M->na+M->nd)))
 			{
+				x1 = i % Nx;
+				y1 = (i / Nx) % Nx;
+				z1 = i / (Nx*Nx);
+				x2 = j % Nx;
+				y2 = (j / Nx) % Nx;
+				z2 = j / (Nx*Nx);
+				
 				if(i == j)
 					PS_add_entry(M, i, j, -6.0);
 				else if(((x1 == x2) && (y1 == y2) && (z1 == z2+1 || z1 == z2-1))
@@ -149,6 +152,7 @@ void PS_generate_grav3d(ParaSparse *M, int *N, MPI_Comm comm)
 					PS_add_entry(M, i, j, 1.0);
 			}
 		}
+	}
 }
 
 void PS_add_entry(ParaSparse *M, int i, int j, double Mij)
