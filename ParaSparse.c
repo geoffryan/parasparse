@@ -562,25 +562,30 @@ void PS_get_precond(ParaSparse *A, ParaSparse *C)
 	free(diag);
 }
 
-void PS_bcg_iter(ParaSparse *A, ParaSparse *C, double *r, double *p, double *x)
+void PS_bcg_iter(ParaSparse *A, ParaSparse *C, double *r, double *p, double *x, 
+				 double *rold, double *pold, double *Ap, double *CAp)
 {
 	int i;
 	double r2, pAp, alpha, beta;
-	double *rold, *pold, *Ap, *CAp;
+//	double *rold, *pold, *Ap, *CAp; 
 	
 	int nd = A->nd;
 	
 	//TODO: declare/allocate these in PS_bcg
-	rold = (double *) malloc(nd * sizeof(double));
-	pold = (double *) malloc(nd * sizeof(double));
-	Ap = (double *) malloc(nd * sizeof(double));
-	CAp = (double *) malloc(nd * sizeof(double));
+//	rold = (double *) malloc(nd * sizeof(double));
+//	pold = (double *) malloc(nd * sizeof(double));
+//	Ap = (double *) malloc(nd * sizeof(double));
+//	CAp = (double *) malloc(nd * sizeof(double));
 	
-	for(i=0; i<nd; i++)
-	{
-		rold[i] = r[i]; //TODO: memcpy?
-		pold[i] = p[i]; //TODO: memcpy?
-	}
+	memcpy(rold, r, nd * sizeof(double));
+	memcpy(pold, p, nd * sizeof(double));
+	
+	
+//	for(i=0; i<nd; i++)
+//	{
+//		rold[i] = r[i]; //TODO: memcpy?
+//		pold[i] = p[i]; //TODO: memcpy?
+//	}
 	
 	r2 = PS_dot(rold, rold, nd, A->comm);
 	PS_multiply(A, pold, Ap);
@@ -599,10 +604,10 @@ void PS_bcg_iter(ParaSparse *A, ParaSparse *C, double *r, double *p, double *x)
 		x[i] += alpha * pold[i];
 	}
 	
-	free(rold);
-	free(pold);
-	free(Ap);
-	free(CAp);
+//	free(rold);
+//	free(pold);
+//	free(Ap);
+//	free(CAp);
 }
 
 int PS_bcg(ParaSparse *A, double *b, double *x)
@@ -611,6 +616,7 @@ int PS_bcg(ParaSparse *A, double *b, double *x)
 	
 	double res0, err;
 	double *Ax, *CAx, *Cb, *r, *p;
+	double *rold, *pold, *Ap, *CAp;
 	int nd = A->nd;
 	
 	Ax = (double *) malloc(nd * sizeof(double));
@@ -618,6 +624,11 @@ int PS_bcg(ParaSparse *A, double *b, double *x)
 	Cb = (double *) malloc(nd * sizeof(double));
 	r = (double *) malloc(nd * sizeof(double));
 	p = (double *) malloc(nd * sizeof(double));
+	
+	rold = (double *) malloc(nd * sizeof(double));
+	pold = (double *) malloc(nd * sizeof(double));
+	Ap = (double *) malloc(nd * sizeof(double));
+	CAp = (double *) malloc(nd * sizeof(double));
 	
 	ParaSparse C;
 	PS_get_precond(A, &C);
@@ -642,7 +653,7 @@ int PS_bcg(ParaSparse *A, double *b, double *x)
 	i = 0;
 	while(err > TOL && i < 2*(A->N))
 	{
-		PS_bcg_iter(A, &C, r, p, x);
+		PS_bcg_iter(A, &C, r, p, x, rold, pold, Ap, CAp);
 //		PS_printV(x, A->na, nd, A->comm);
 		err = sqrt(PS_dot(r,r,nd,A->comm) / res0);
 		
@@ -659,6 +670,11 @@ int PS_bcg(ParaSparse *A, double *b, double *x)
 	free(Cb);
 	free(r);
 	free(p);
+
+	free(rold);
+	free(pold);
+	free(Ap);
+	free(CAp);
 	
 	return i;
 	

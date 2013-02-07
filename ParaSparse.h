@@ -61,7 +61,8 @@ void PS_printV(double *v, int na, int nd, MPI_Comm comm);
 double PS_dot(double *x, double *y, int nd, MPI_Comm comm);
 void PS_get_diag(ParaSparse *A, double *d);
 void PS_get_precond(ParaSparse *A, ParaSparse *C);
-void PS_bcg_iter(ParaSparse *A, ParaSparse *C, double *r, double *p, double *x);
+void PS_bcg_iter(ParaSparse *A, ParaSparse *C, double *r, double *p, double *x, 
+				 double *rold, double *pold, double *Ap, double *CAp);
 int PS_bcg(ParaSparse *A, double *b, double *x);
 
 #endif 
